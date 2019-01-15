@@ -1,0 +1,18 @@
+{
+  "name": "Boomi Tools",
+  "description": "A Simple Set of Tools to Improve Boomi",
+  "version": "1.0",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [{
+    "matches": ["https://platform.boomi.com/*"],
+    "run_at": "document_end",
+    "js": ["bt_contentScript.js"]
+  }],
+  "web_accessible_resources" : ["bt_inPage.js"],
+  "browser_action": {
+    "default_title": "Boomi Tools"
+  },
+  "manifest_version": 2
+}
