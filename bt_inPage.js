@@ -307,6 +307,77 @@ const BoomiTools_Init = () => {
         }, false);
     })()
 
+    const insert_global_css = (()=>{
+
+        document.querySelector('body').insertAdjacentHTML('afterbegin', `
+        
+        <style>
+        
+            .greenGlow{
+                background: rgba(107, 193, 6, 0.65) !important;
+                border-radius: 50%;
+                padding: 1px;
+                box-shadow: 0 0 0 2px rgba(107, 193, 6, 1);
+            }
+
+            .redGlow{
+                background: rgba(255, 66, 34, 0.65) !important;
+                border-radius: 50%;
+                padding: 1px;
+                box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);
+                animation: redPulse 1s linear infinite;
+            }
+
+            @keyframes redPulse {
+                from {box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);}
+                to {box-shadow: 0 0 0 10px rgba(255, 66, 34, 0.0);}
+            }
+
+            .yellowGlow{
+                background: rgba(255, 235, 59, 0.65) !important;
+                border-radius: 50%;
+                padding: 1px;
+                box-shadow: 0 0 0 0 rgba(255, 235, 59, 1);
+                animation: yellowPulse 1s linear infinite;
+            }
+
+            @keyframes yellowPulse {
+                from {box-shadow: 0 0 0 0 rgba(255, 235, 59, 1);}
+                to {box-shadow: 0 0 0 10px rgba(255, 235, 59, 0.0);}
+            }
+
+            .yellowGlow img:not([title]){
+                display:none;
+            }
+
+            .gwt-TestFocused{
+                border:none;
+            }
+
+            .gwt-TestFocused::after{
+                content:'';
+                position:absolute;
+                width:100%;
+                height:100%;
+                top:-2px;left:-2px;
+                display:block;
+                border-radius: 50%;
+                transform: scale(1.2);
+                border: 2px dotted black;
+                animation: selectionrotate 1s steps(10, end) infinite reverse;
+            }
+
+            @keyframes selectionrotate {
+                from {transform: scale(1.2) rotate(0deg);}
+                to {transform: scale(1.2) rotate(360deg);}
+            }
+        
+        </style>
+
+        `);
+
+    })()
+
 }
 
 BoomiTools_Init()
