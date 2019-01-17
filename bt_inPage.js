@@ -137,11 +137,6 @@ const create_note_group = (el) => {
                 note_group.style.left = matched_icon.style.left;
             }, false);
 
-            matched_node.querySelector('div[title="Delete Note"]').addEventListener('click',function(){
-                nodeParent.querySelector(`.BoomiToolsNoteGroup[data-notegroup="${group_id}"]`).remove()
-                el.innerText = "Group";
-            }, false);
-
             note_group.querySelector('.NoteResize').addEventListener('mousedown',function(e){
                 dragObj = {
                     el: note_group,
@@ -151,6 +146,13 @@ const create_note_group = (el) => {
                     h: parseInt(note_group.style.height)
                 };
             }, false);
+
+            let check_if_note_exists = setInterval(()=>{
+                if(!nodeParent.querySelector(`.note-icon[data-notegroup="${group_id}"]`)){
+                    clearInterval(check_if_note_exists)
+                    nodeParent.querySelector(`.BoomiToolsNoteGroup[data-notegroup="${group_id}"]`).remove()
+                }
+            },1000)
 
             if(!windowMouseMover){
                 windowMouseMover = true;
