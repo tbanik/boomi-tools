@@ -45,17 +45,22 @@ const create_note_group = (el) => {
 
     let noteForm = el.closest('.note-form');
     
-    if(!noteForm){
-        var node = el.closest('.note-preview').parentElement.parentElement;
-        noteForm = [...el.closest('.gwt-ProcessPanel').querySelectorAll(':not([data-notegroup]')].reverse().find(child => {
-            try {
-                if(parseInt(child.style.top) == parseInt(node.style.top) && parseInt(child.style.left) == parseInt(node.style.left) && child.querySelector('.note-form')) return true;
-            } catch (error) {}
-        }).querySelector('.note-form');
-        node = noteForm.parentElement;
-    }else{
-        var node = noteForm.parentElement;
+    try {
+        if(!noteForm){
+            var node = el.closest('.note-preview').parentElement.parentElement;
+            noteForm = [...el.closest('.gwt-ProcessPanel').querySelectorAll(':not([data-notegroup]')].reverse().find(child => {
+                try {
+                    if(parseInt(child.style.top) == parseInt(node.style.top) && parseInt(child.style.left) == parseInt(node.style.left) && child.querySelector('.note-form')) return true;
+                } catch (error) {}
+            }).querySelector('.note-form');
+            node = noteForm.parentElement;
+        }else{
+            var node = noteForm.parentElement;
+        }
+    } catch (error) {
+        return false
     }
+    
 
     let nodeParent = noteForm.closest('.gwt-ProcessPanel');
 
