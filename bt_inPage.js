@@ -300,7 +300,9 @@ const BoomiTools_Init = () => {
                 noteForm.querySelector('.button_row').insertAdjacentHTML('beforeend', notegroupbutton_html);
 
                 if(/\n{0,2}---\n\#BoomiTools: \[\"(\d*px)\"\,\"(\d*px)\"\,\"([a-z]*)\"\]/g.test(noteForm.querySelector('textarea').value)){
-                    create_note_group(noteForm)
+                    setTimeout(()=>{
+                        create_note_group(noteForm)
+                    },100)
                 }
 
             } catch (error) {}
