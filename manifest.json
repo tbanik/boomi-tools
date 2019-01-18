@@ -1,7 +1,7 @@
 {
   "name": "Boomi Tools",
   "description": "A Simple Set of Tools to Improve Boomi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "permissions": [
     "activeTab"
   ],
