@@ -13,7 +13,7 @@ let wait_for_load = setInterval(()=>{
 
         document.getElementById('footer_links').insertAdjacentHTML('afterbegin', `
 
-            <li><a class="alternate_link" target="_blank">BoomiTools v${chrome.runtime.getManifest().version} loaded</a></li>
+            <li><a class="alternate_link" target="_blank" href="https://chrome.google.com/webstore/detail/boomi-tools/dmdcjdejggikfpfkgknpmcdbcdgalnoj/">BoomiTools v${chrome.runtime.getManifest().version} loaded</a></li>
 
         `);
     }
