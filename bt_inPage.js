@@ -268,7 +268,7 @@ const quick_component_select = (panel) => {
 
                 [...document.querySelectorAll('.BoomiToolsQuickComponent')].forEach(item=>item.remove())
 
-                let shapes_list = [...document.querySelectorAll('.shape_palette_results .shape_palette_widget_container')].map(shape => `<option>${shape.querySelector('.gwt-Label').innerText}</option>`)
+                let shapes_list = [...panel.closest('.component_editor_panel').querySelectorAll('.shape_palette_results .shape_palette_widget_container')].map(shape => `<option>${shape.querySelector('.gwt-Label').innerText}</option>`)
 
                 let quickinput_html = `
                     <div class="BoomiToolsQuickComponent" style="position:absolute;top:${e.clientY}px;left:${e.clientX}px;">
@@ -294,7 +294,7 @@ const quick_component_select = (panel) => {
                     document.querySelector('.BoomiToolsQuickComponent form').addEventListener('submit', function(e){
                         e.preventDefault();
                         
-                        let first = [...document.querySelectorAll('.shape_palette_results .shape_palette_widget_container')].find(shape => shape.querySelector('.gwt-Label').innerText.toLowerCase() == document.querySelector('.BoomiToolsQuickComponent input').value.toLowerCase());
+                        let first = [...panel.closest('.component_editor_panel').querySelectorAll('.shape_palette_results .shape_palette_widget_container')].find(shape => shape.querySelector('.gwt-Label').innerText.toLowerCase() == document.querySelector('.BoomiToolsQuickComponent input').value.toLowerCase());
 
                         if(!first) return false;
 
