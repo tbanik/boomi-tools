@@ -461,6 +461,18 @@ const BoomiTools_Init = () => {
                 from {transform: scale(1.2) rotate(0deg);}
                 to {transform: scale(1.2) rotate(360deg);}
             }
+
+            .disconnected::after{
+                content:'';
+                position:absolute;
+                top: -20%;
+                left: -20%;
+                width: 130%;
+                height: 130%;
+                border-radius: 50%;
+                box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);
+                animation: redPulse 1s linear infinite;
+            }
         
         </style>
 
