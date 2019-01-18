@@ -89,6 +89,8 @@ const create_note_group = (el) => {
                 } catch (error) {}
             })
 
+            if(!matched_node || !matched_icon) return false;
+
         
             let group_id = [...Array(8)].map(i=>(~~(Math.random()*10))).join('');
 
