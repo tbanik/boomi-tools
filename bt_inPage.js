@@ -254,6 +254,78 @@ const select_group = (group) => {
 
 }
 
+let quick_component_listener = false;
+const quick_component_select = (panel) => {
+
+    panel.addEventListener('dblclick', function(e){
+
+        if(document.querySelector('.copy_paste_panel').classList.contains('no_display')){
+            if(e.target == panel.firstChild){
+
+                let org_event = e;
+
+                [...document.querySelectorAll('.BoomiToolsQuickComponent')].forEach(item=>item.remove())
+
+                let shapes_list = [...document.querySelectorAll('.shape_palette_results .shape_palette_widget_container')].map(shape => `<option>${shape.querySelector('.gwt-Label').innerText}</option>`)
+
+                let quickinput_html = `
+                    <div class="BoomiToolsQuickComponent" style="position:absolute;top:${e.clientY}px;left:${e.clientX}px;">
+                        <form>
+                            <input type="text" list="shapes_list" tabindex="-1" placeholder="Component name...">
+
+                            <datalist id="shapes_list">
+                                ${shapes_list}
+                            </datalist>
+                        </form>
+                    </div>
+                `
+
+                document.querySelector('body').insertAdjacentHTML('beforeend', quickinput_html);
+                
+                setTimeout(()=>{
+                    document.querySelector('.BoomiToolsQuickComponent input').focus()
+
+                    document.querySelector('.BoomiToolsQuickComponent input').addEventListener('change', function(e){
+                        document.querySelector('filter_search_input')
+                    });
+
+                    document.querySelector('.BoomiToolsQuickComponent form').addEventListener('submit', function(e){
+                        e.preventDefault();
+                        
+                        let first = [...document.querySelectorAll('.shape_palette_results .shape_palette_widget_container')].find(shape => shape.querySelector('.gwt-Label').innerText.toLowerCase() == document.querySelector('.BoomiToolsQuickComponent input').value.toLowerCase());
+
+                        if(!first) return false;
+
+                        var down = new MouseEvent('mousedown');
+
+                        var up = new MouseEvent('mouseup',{
+                            "clientX": org_event.clientX,
+                            "clientY": org_event.clientY
+                        });
+
+                        first.dispatchEvent(down)
+                        document.querySelector('body > div[tabindex="0"]').dispatchEvent(up);
+
+                        setTimeout(()=>{
+                            [...document.querySelectorAll('.BoomiToolsQuickComponent')].forEach(item=>item.remove())
+                        },0)
+                    });
+                },0)
+
+            }
+        }
+
+    });
+
+    panel.addEventListener('mouseup', function(e){
+        if(e.target != document.querySelector('.BoomiToolsQuickComponent')){
+            [...document.querySelectorAll('.BoomiToolsQuickComponent')].forEach(item=>item.remove())
+        }
+    });
+
+
+
+}
 
 const BoomiTools_Init = () => {
 
@@ -309,6 +381,22 @@ const BoomiTools_Init = () => {
         }, false);
     })()
 
+    const process_flow_load = setInterval(()=>{
+
+        let process_panels = document.querySelectorAll('.gwt-ProcessPanel:not(.bt-load-done)');
+
+        if(process_panels.length){
+            [...process_panels].forEach(panel => {
+
+                panel.classList.add('bt-load-done')
+
+                quick_component_select(panel);
+
+            })
+        }
+
+    },1000)
+    
     const insert_global_css = (()=>{
 
         document.querySelector('body').insertAdjacentHTML('afterbegin', `

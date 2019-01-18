@@ -5,3 +5,17 @@ const loadScript = (() => {
     script.setAttribute('src', chrome.extension.getURL('bt_inPage.js'));
     body.appendChild(script);
 })()
+
+let wait_for_load = setInterval(()=>{
+
+    if(document.querySelector('body').classList.length){
+        clearInterval(wait_for_load)
+
+        document.getElementById('footer_links').insertAdjacentHTML('afterbegin', `
+
+            <li><a class="alternate_link" target="_blank">BoomiTools v${chrome.runtime.getManifest().version} loaded</a></li>
+
+        `);
+    }
+
+},250)
