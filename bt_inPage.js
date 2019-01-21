@@ -1,3 +1,4 @@
+let boomitools_showconnections = false;
 const process_tree_update = (xml) => {
 
     let root = xml.getElementsByTagName('Folders')[0];
@@ -9,7 +10,7 @@ const process_tree_update = (xml) => {
         if(!parentFolders.includes(folder)) parentFolders.push(folder)
     })
 
-    let msg_html = `${connections.length} Connections`;
+    let msg_html = `<span class="BoomiToolsConnections">${connections.length} Connections`;
 
     if(parentFolders.length > 1){
         //connection parent folder mismatch
@@ -37,11 +38,30 @@ const process_tree_update = (xml) => {
 
         document.getElementsByTagName('body')[0].insertAdjacentHTML('beforeend', alert_html) */
 
-        msg_html+= ` <span style="color:red">(${parentFolders.length} Parent Folders)</span>`
+        msg_html+= ` <span class="connectionsspanlink" onclick="boomitools_showconnections = !boomitools_showconnections">(${parentFolders.length} Parent Folders)</span>`;
 
     }
 
+    msg_html+= `</span>`;
+    [...document.querySelectorAll('.BoomiToolsConnections')].forEach(el => el.remove())
     document.querySelector('#mastfoot').insertAdjacentHTML('afterbegin', msg_html);
+
+    let treeviewtimer = setInterval(()=>{
+        let folderElements = parentFolders.map(folder => {
+            return [...document.querySelectorAll('.filterable_component_tree .gwt-FastTreeItem .gwt-Label')].find(label => label.innerText == folder.attributes.name.value) || false;
+        }).filter(folder => !!folder)
+
+        if(folderElements) {
+            folderElements.forEach(folder => {
+                if(boomitools_showconnections){
+                    folder.classList.add('boomitools_showconnections');
+                }else{
+                    folder.classList.remove('boomitools_showconnections');
+                }
+            })
+        }
+    },500)
+
 }
 
 let currentColor = 0;
@@ -575,6 +595,20 @@ const BoomiTools_Init = () => {
 
             .mastfoot .footer_msg{
                 float:left;
+            }
+
+            .boomitools_showconnections{
+                color:red;
+                font-weight:bold;
+            }
+
+            .connectionsspanlink{
+                color:red;
+                cursor:pointer
+            }
+
+            .connectionsspanlink:hover{
+                text-decoration:underline;
             }
         
         </style>
