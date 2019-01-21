@@ -9,10 +9,12 @@ const process_tree_update = (xml) => {
         if(!parentFolders.includes(folder)) parentFolders.push(folder)
     })
 
+    let msg_html = `${connections.length} Connections`;
+
     if(parentFolders.length > 1){
         //connection parent folder mismatch
 
-        parentFolders = parentFolders.map(folder => `<li>${folder.attributes.name.value}</li>`).join('')
+/*         parentFolders = parentFolders.map(folder => `<li>${folder.attributes.name.value}</li>`).join('')
 
         let alert_html = `
         <div class="BoomiToolsOverlay" style="position:fixed;z-index:9999;display:grid;place-items:center;min-height:100vh;min-width:100vw;background: rgba(0,0,0,0.25);">
@@ -33,9 +35,13 @@ const process_tree_update = (xml) => {
             </div>
         </div>`
 
-        document.getElementsByTagName('body')[0].insertAdjacentHTML('beforeend', alert_html)
+        document.getElementsByTagName('body')[0].insertAdjacentHTML('beforeend', alert_html) */
+
+        msg_html+= ` <span style="color:red">(${parentFolders.length} Parent Folders)</span>`
 
     }
+
+    document.querySelector('#mastfoot').insertAdjacentHTML('afterbegin', msg_html);
 }
 
 let currentColor = 0;
@@ -329,6 +335,56 @@ const quick_component_select = (panel) => {
 
 }
 
+const add_endpoint_listener = (endpoint) => {
+
+    let endpointmenu_html = `
+    <div class="BoomiToolsEndpointMenu" tabindex="0" style="z-index: 5;position: absolute;left: 18px;top: -7px; width: max-content;" aria-hidden="true">
+        <div>
+            <div class="hover-menu-hidden-hotspot left-arrow">
+                <div class="hover-menu">
+                    <ul class="menu-options">
+                        <li><div class="gwt-Label gwt-ClickableLabel bt-stop">Stop</div></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    endpoint.insertAdjacentHTML('beforeend', endpointmenu_html);
+
+    endpoint.querySelector('.bt-stop').addEventListener('mousedown', function(e){
+
+        let first = [...endpoint.closest('.component_editor_panel').querySelectorAll('.shape_palette_results .shape_palette_widget_container')].find(shape => shape.querySelector('.gwt-Label').innerText.toLowerCase() == "stop");
+
+        if(!first) return false;
+
+        let rect = endpoint.getBoundingClientRect();
+
+        var down = new MouseEvent('mousedown');
+        var up = new MouseEvent('mouseup',{
+            "clientX": rect.left+15,
+            "clientY": rect.top-15
+        });
+
+        first.dispatchEvent(down)
+        document.querySelector('body > div[tabindex="0"]').dispatchEvent(up);
+
+        setTimeout(()=>{
+            endpoint.dispatchEvent(down)
+
+
+            var up = new MouseEvent('mouseup',{
+                "clientX": rect.left+25,
+                "clientY": rect.top+5
+            });
+            document.querySelector('body > div[tabindex="0"]').dispatchEvent(up);
+        },0)
+
+    })
+
+}
+
 const BoomiTools_Init = () => {
 
     const get_XML_responses = (()=>{
@@ -393,6 +449,22 @@ const BoomiTools_Init = () => {
                 panel.classList.add('bt-load-done')
 
                 quick_component_select(panel);
+
+            })
+        }
+
+    },1000)
+
+    const endpoints_listener = setInterval(()=>{
+
+        let endpoints = document.querySelectorAll('.gwt-EndPoint:not(.bt-load-done)');
+
+        if(endpoints.length){
+            [...endpoints].forEach(endpoint => {
+
+                endpoint.classList.add('bt-load-done')
+
+                add_endpoint_listener(endpoint);
 
             })
         }
@@ -474,6 +546,35 @@ const BoomiTools_Init = () => {
                 border-radius: 50%;
                 box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);
                 animation: redPulse 1s linear infinite;
+            }
+
+            .hover-menu-hidden-hotspot.left-arrow::after{
+                transform: rotate(90deg);
+                top: 50%;
+                left: 0;
+                margin-top: -10px;
+                margin-left: -5px;
+                z-index: -1;
+            }
+
+            .gwt-EndPoint .BoomiToolsEndpointMenu{
+                display:none;
+            }
+
+            .gwt-EndPoint.disconnected:hover .BoomiToolsEndpointMenu{
+                display:block;
+            }
+
+            .BoomiToolsEndpointMenu .gwt-ClickableLabel{
+                background: #007db8;
+            }
+
+            .BoomiToolsEndpointMenu .gwt-ClickableLabel:hover{
+                background: #007db8 url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAASCAYAAACaV7S8AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC5JREFUeNpi0rDP/8/EAAS4iC8g4gOIeAsiXoOIlyDiBYh4Dme9hMuC1X0ACDAA4fQNB2Q26qAAAAAASUVORK5CYII=') top left repeat-x !important;
+            }
+
+            .mastfoot .footer_msg{
+                float:left;
             }
         
         </style>
