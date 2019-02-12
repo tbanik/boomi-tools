@@ -405,6 +405,68 @@ const add_endpoint_listener = (endpoint) => {
 
 }
 
+const add_shape_listener = (shape) => {
+
+    let timer = null;
+
+    setTimeout(()=>{
+
+        shape.addEventListener('mouseover', function(e){
+
+            timer = setTimeout(()=>{
+                [...document.querySelectorAll(`.gwt-connectors-line`)].forEach(line => {
+                    line.classList.add('boomitools-linetrace')
+                });
+
+                var down = new MouseEvent('mousedown');
+
+                var move = new MouseEvent('mousemove', {
+                    "clientX": 5,
+                    "clientY": 0
+                });
+
+                var up = new MouseEvent('mouseup', {
+                    "clientX": 0,
+                    "clientY": 0
+                });
+        
+                shape.closest('.dragdrop-draggable').dispatchEvent(down);
+                shape.closest('.dragdrop-draggable').dispatchEvent(move);
+                document.querySelector('body > div[tabindex="0"]').dispatchEvent(up);
+
+                setTimeout(()=>{
+                    [...document.querySelectorAll(`.gwt-connectors-line:not(.boomitools-linetrace)`)].forEach(line => {
+                        line.parentNode.classList.add('boomitools-lineparent')
+                        line.classList.add('boomitools-linetrace-active')
+                    })
+                },0)
+            },1000)
+        })
+
+        shape.addEventListener('mouseout', function(e){
+            clearTimeout(timer);
+
+            [...document.querySelectorAll(`.gwt-connectors-line`)].forEach(line => {
+                line.classList.remove('boomitools-linetrace')
+                line.parentNode.classList.remove('boomitools-lineparent')
+                line.classList.remove('boomitools-linetrace-active')
+            });
+        })
+
+        shape.addEventListener('mousedown', function(e){
+            clearTimeout(timer);
+
+            [...document.querySelectorAll(`.gwt-connectors-line`)].forEach(line => {
+                line.classList.remove('boomitools-linetrace')
+                line.parentNode.classList.remove('boomitools-lineparent')
+                line.classList.remove('boomitools-linetrace-active')
+            });
+        })
+
+    },0)
+
+}
+
 const BoomiTools_Init = () => {
 
     const get_XML_responses = (()=>{
@@ -486,6 +548,23 @@ const BoomiTools_Init = () => {
 
                 add_endpoint_listener(endpoint);
 
+            })
+        }
+
+    },1000)
+
+    const shape_listener = setInterval(()=>{
+
+        let shapes = document.querySelectorAll('.gwt-Shape:not(.bt-load-done)');
+
+        if(shapes.length){
+            [...shapes].forEach(shape => {
+                shape.classList.add('bt-load-done')
+
+                let rect = shape.getBoundingClientRect();
+                if(rect.width == 34 && rect.height == 34){
+                    add_shape_listener(shape);
+                }
             })
         }
 
@@ -609,6 +688,22 @@ const BoomiTools_Init = () => {
 
             .connectionsspanlink:hover{
                 text-decoration:underline;
+            }
+
+            .gwt-connectors-line{
+                transition:background 200ms ease;
+            }
+
+            .boomitools-lineparent{
+                z-index:1;
+            }
+
+            .boomitools-linetrace{
+                background:#dddddd;
+            }
+
+            .boomitools-linetrace-active{
+                background:#007db8;
             }
         
         </style>
