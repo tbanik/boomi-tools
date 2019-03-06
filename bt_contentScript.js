@@ -6,11 +6,11 @@ const loadScript = (() => {
     body.appendChild(script);
 })()
 
+let org_title = document.title;
 let wait_for_load = setInterval(()=>{
 
-    if(document.querySelector('body').classList.length){
+    if(org_title != document.title){
         clearInterval(wait_for_load)
-
         document.getElementById('footer_links').insertAdjacentHTML('afterbegin', `
 
             <li><a class="alternate_link" target="_blank" href="https://chrome.google.com/webstore/detail/boomi-tools/dmdcjdejggikfpfkgknpmcdbcdgalnoj/">BoomiTools v${chrome.runtime.getManifest().version} loaded</a></li>

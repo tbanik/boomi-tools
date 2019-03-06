@@ -1,4 +1,5 @@
-let boomitools_showconnections = false;
+let boomitools_showconnections = true;
+let treeviewtimer = null;
 const process_tree_update = (xml) => {
 
     let root = xml.getElementsByTagName('Folders')[0];
@@ -14,6 +15,8 @@ const process_tree_update = (xml) => {
 
     if(parentFolders.length > 1){
         //connection parent folder mismatch
+
+//THIS SECTION WAS USED FOR A GLOBAL ALERT IF THERE WERE MULTIPLE PARENT FOLDERS. IT TURNED OUT TO BE TOO ANNOYING.
 
 /*         parentFolders = parentFolders.map(folder => `<li>${folder.attributes.name.value}</li>`).join('')
 
@@ -43,15 +46,18 @@ const process_tree_update = (xml) => {
     }
 
     msg_html+= `</span>`;
-    [...document.querySelectorAll('.BoomiToolsConnections')].forEach(el => el.remove())
+    [...document.querySelectorAll('.BoomiToolsConnections')].forEach(el => el.remove());
     document.querySelector('#mastfoot').insertAdjacentHTML('afterbegin', msg_html);
-
-    let treeviewtimer = setInterval(()=>{
+    
+    clearInterval(treeviewtimer);
+    treeviewtimer = setInterval(()=>{
+        
         let folderElements = parentFolders.map(folder => {
             return [...document.querySelectorAll('.filterable_component_tree .gwt-FastTreeItem .gwt-Label')].find(label => label.innerText == folder.attributes.name.value) || false;
-        }).filter(folder => !!folder)
-
-        if(folderElements) {
+        }).filter(folder => !!folder);
+        
+        [...document.querySelectorAll('.boomitools_showconnections')].forEach(el => el.classList.remove('boomitools_showconnections'));
+        if(folderElements && folderElements.length > 1) {
             folderElements.forEach(folder => {
                 if(boomitools_showconnections){
                     folder.classList.add('boomitools_showconnections');
@@ -440,7 +446,7 @@ const add_shape_listener = (shape) => {
                         line.classList.add('boomitools-linetrace-active')
                     })
                 },0)
-            },1000)
+            },650)
         })
 
         shape.addEventListener('mouseout', function(e){
@@ -466,6 +472,100 @@ const add_shape_listener = (shape) => {
     },0)
 
 }
+
+let fullscreen_once = false;
+const add_fullscreen_listener = (button) => {
+
+    setTimeout(()=>{
+        var click = new MouseEvent('click', {
+            "clientX": 1,
+            "clientY": 1
+        });
+
+        button.addEventListener('mouseup', function(e){
+            setTimeout(()=>{
+                if(!fullscreen_once){
+                    fullscreen_once = true;
+                    button.dispatchEvent(click);
+                }
+            },1)
+        })
+
+        window.addEventListener('keydown', event => {
+
+            //check if the focused element is editable
+            var el=event.target, nodeName = el.nodeName.toLowerCase();
+            if (el.nodeType == 1 && (nodeName == 'textarea' || el.isContentEditable || (nodeName == 'input' && /^(?:text|email|number|search|tel|url|password)$/i.test(el.type)))) return false;
+
+            if(event.isComposing || event.keyCode === 229) return false;
+
+            if(event.keyCode === 192 && !event.altKey){
+                setTimeout(()=>{
+                    button.dispatchEvent(click);
+                },1)
+                setTimeout(()=>{
+                    if(!fullscreen_once){
+                        fullscreen_once = true;
+                        button.dispatchEvent(click);
+                    }
+                },10)
+            }
+
+            if(event.keyCode === 192 && event.altKey){
+                [...document.querySelectorAll('.collapsible_dragger')].forEach((dragger,index) => {
+                    setTimeout(()=>{
+                        let rect = dragger.getBoundingClientRect();
+                        var down = new MouseEvent('mousedown', {
+                            "clientX":rect.left,
+                            "clientY":rect.top,
+                        });
+
+                        var move = new MouseEvent('mousemove', {
+                            "clientX": 1,
+                            "clientY": 1
+                        });
+
+                        var up = new MouseEvent('mouseup', {
+                            "clientX": 1,
+                            "clientY": 1
+                        });
+
+                        dragger.dispatchEvent(down);
+                        dragger.dispatchEvent(move);
+                        setTimeout(()=>{
+                            dragger.dispatchEvent(up);
+                        },15*index)
+                    },10*index)
+                })
+            }
+          });
+
+    },0)
+
+}
+
+const add_dialog_listener = (dialog) => {
+
+    let rect = dialog.getBoundingClientRect();
+    let children = [...dialog.getElementsByTagName('*')];
+
+
+    //EXPERIMENTAL
+    /* children.forEach(child => {
+        if(child.style.width && child.style.height){
+            console.log(parseInt(child.style.width), rect.width+20);
+            if(parseInt(child.style.width) <= rect.width+20 && parseInt(child.style.width) >= rect.width-20){
+                console.log(child);
+            }
+
+            if(parseInt(child.style.height) <= rect.height+20 && parseInt(child.style.height) >= rect.height-20){
+                console.log(child);
+            }
+        }
+    }) */
+
+}
+
 
 const BoomiTools_Init = () => {
 
@@ -521,6 +621,10 @@ const BoomiTools_Init = () => {
         }, false);
     })()
 
+
+    //WILL EVENTIALLY COMBINE ALL OF THESE LISTNERS INTO 1. FOR NOW ITS EASIER TO KEEP THEM AS IS SO I CAN DISABLE THEM
+
+
     const process_flow_load = setInterval(()=>{
 
         let process_panels = document.querySelectorAll('.gwt-ProcessPanel:not(.bt-load-done)');
@@ -564,6 +668,35 @@ const BoomiTools_Init = () => {
                 let rect = shape.getBoundingClientRect();
                 if(rect.width == 34 && rect.height == 34){
                     add_shape_listener(shape);
+                }
+            })
+        }
+
+    },1000)
+
+    const fullscreen_listener = setInterval(()=>{
+
+        let buttons = document.querySelectorAll('button.fullscreen_view_button:not(.bt-load-done)');
+
+        if(buttons.length){
+            [...buttons].forEach(button => {
+                button.classList.add('bt-load-done')
+                add_fullscreen_listener(button);
+            })
+        }
+
+    },1000)
+
+    const dialog_listener = setInterval(()=>{
+
+        let dialogs = document.querySelectorAll('.gwt-DialogBox:not(.bt-load-done)');
+
+        if(dialogs.length){
+            [...dialogs].forEach(dialog => {
+                dialog.classList.add('bt-load-done');
+
+                if(dialog.querySelector('.dialogTopCenterInner .Caption').innerText){
+                    add_dialog_listener(dialog);
                 }
             })
         }
@@ -703,7 +836,20 @@ const BoomiTools_Init = () => {
             }
 
             .boomitools-linetrace-active{
-                background:#007db8;
+                animation: tracepulse 0.3s ease infinite alternate;
+            }
+
+            @keyframes tracepulse {
+                from {
+                    background:#007db8;
+                }
+                to {
+                    background:#00adff;
+                }
+            }
+
+            span.ignoreBreaks {
+                white-space: pre-line;
             }
         
         </style>
