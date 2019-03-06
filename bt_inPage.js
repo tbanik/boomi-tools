@@ -947,7 +947,7 @@ const BoomiTools_Init = () => {
                 white-space: pre-line;
             }
 
-            .gwt-Image{
+            .shape_palette_widget .gwt-Image{
                 width:32px !important;
                 height: 32px !important;
             }
