@@ -1,11 +1,14 @@
 let boomitools_showconnections = true;
 let treeviewtimer = null;
 let duplicateNames = [];
+let root = null;
 const process_tree_update = (xml) => {
 
-    let root = xml.getElementsByTagName('Folders')[0];
+    root = xml.getElementsByTagName('Folders')[0];
     let connections = root.querySelectorAll('Category[name=Connections]');
-    let components = root.querySelectorAll('Component');
+
+    if(!window.BoomiTools) return false;
+    if(BoomiTools.component_name_notify) dupeNamesCheck();
 
     //THIS SECTION WAS USED FOR A GLOBAL ALERT IF THERE WERE MULTIPLE PARENT FOLDERS. IT TURNED OUT TO BE TOO ANNOYING.
     /* let parentFolders = [];
@@ -71,26 +74,38 @@ const process_tree_update = (xml) => {
     },500) */
 
 
+}
+
+const dupeNamesCheck = () => {
+    if(!root) return false;
+    let components = root.querySelectorAll('Component');
     let uniqueComponentNames = [], dupeCount = 0;
     duplicateNames = [];
     components.forEach(component => {
-        if(uniqueComponentNames.includes(component.getAttribute('name').toLowerCase())){
+        component.getAttribute('name').toLowerCase()
+        if(uniqueComponentNames.find(item => {
+            let typeMatch = item.getAttribute('type') == component.getAttribute('type');
+            let nameMatch = item.getAttribute('name') == component.getAttribute('name');
+            
+            if(BoomiTools.component_name_notify == 'type') return typeMatch && nameMatch;
+            else return nameMatch
+
+        })){
             dupeCount++;
             if(!duplicateNames.includes(component.getAttribute('name'))) duplicateNames.push(component.getAttribute('name'))
         }else{
-            uniqueComponentNames.push(component.getAttribute('name').toLowerCase())
+            uniqueComponentNames.push(component)
         }
     })
 
-    if(dupeCount){
+    if(dupeCount && BoomiTools.component_name_notify != 'off'){
         let msg_html = `<span class="BoomiToolsConnections">`;
-        msg_html+= `<span class="connectionsspanlink" onclick="displayDupeNames()">${dupeCount} Duplicate Component Names!</span>`;
+        msg_html+= `<span class="connectionsspanlink" onclick="displayDupeNames()">${dupeCount} Duplicate Component Names</span>`;
         msg_html+= `</span>`;
 
         [...document.querySelectorAll('.BoomiToolsConnections')].forEach(el => el.remove());
         document.querySelector('#mastfoot').insertAdjacentHTML('afterbegin', msg_html);
     }
-
 }
 
 const displayDupeNames = () => {
@@ -445,6 +460,12 @@ const quick_component_select = (panel) => {
 
 const add_endpoint_listener = (endpoint) => {
 
+    if(BoomiTools.endpoint_flash == 'on'){
+        endpoint.classList.add('bt-endpoint-flash');
+    }else if(BoomiTools.endpoint_flash == 'testing'){
+        endpoint.classList.add('bt-endpoint-flash-testonly');
+    }
+
     let endpointmenu_html = `
     <div class="BoomiToolsEndpointMenu" tabindex="0" style="z-index: 5;position: absolute;left: 18px;top: -7px; width: max-content;" aria-hidden="true">
         <div>
@@ -507,6 +528,9 @@ const add_endpoint_listener = (endpoint) => {
 }
 
 const add_shape_listener = (shape) => {
+    if(BoomiTools.path_trace_highlight == 'off') return false;
+    let rect = shape.getBoundingClientRect();
+    if(rect.width != 34 && rect.height != 34) return false;
 
     let timer = null;
 
@@ -538,7 +562,8 @@ const add_shape_listener = (shape) => {
                 setTimeout(()=>{
                     [...document.querySelectorAll(`.gwt-connectors-line:not(.boomitools-linetrace)`)].forEach(line => {
                         line.parentNode.classList.add('boomitools-lineparent')
-                        line.classList.add('boomitools-linetrace-active')
+
+                        line.classList.add(BoomiTools.path_trace_highlight == 'solid' ? 'boomitools-linetrace-active-solid':'boomitools-linetrace-active-pulse' )
                     })
                 },0)
             },650)
@@ -551,6 +576,7 @@ const add_shape_listener = (shape) => {
                 line.classList.remove('boomitools-linetrace')
                 line.parentNode.classList.remove('boomitools-lineparent')
                 line.classList.remove('boomitools-linetrace-active')
+                line.classList.remove('boomitools-linetrace-active-pulse')
             });
         })
 
@@ -561,6 +587,7 @@ const add_shape_listener = (shape) => {
                 line.classList.remove('boomitools-linetrace')
                 line.parentNode.classList.remove('boomitools-lineparent')
                 line.classList.remove('boomitools-linetrace-active')
+                line.classList.remove('boomitools-linetrace-active-pulse')
             });
         })
 
@@ -569,6 +596,8 @@ const add_shape_listener = (shape) => {
 }
 
 let fullscreen_once = false;
+let fullscreen_cycle = false;
+let fullscreen_status = false;
 const add_fullscreen_listener = (button) => {
 
     setTimeout(()=>{
@@ -577,16 +606,21 @@ const add_fullscreen_listener = (button) => {
             "clientY": 1
         });
 
-        button.addEventListener('mouseup', function(e){
-            setTimeout(()=>{
-                if(!fullscreen_once){
+        button.addEventListener('mouseup', () => {
+            fullscreen_cycle = false;
+            if(!fullscreen_once){
+                setTimeout(()=>{
                     fullscreen_once = true;
                     button.dispatchEvent(click);
-                }
-            },1)
+                },1)
+            }
+            setTimeout(()=>{
+                fullscreen_status = button.getAttribute('title').includes('Exit');
+            },2)
         })
 
         window.addEventListener('keydown', event => {
+            fullscreen_status = button.getAttribute('title').includes('Exit');
 
             //check if the focused element is editable
             var el=event.target, nodeName = el.nodeName.toLowerCase();
@@ -594,21 +628,30 @@ const add_fullscreen_listener = (button) => {
 
             if(event.isComposing || event.keyCode === 229) return false;
 
-            if(event.keyCode === 192 && !event.altKey){
-                setTimeout(()=>{
-                    button.dispatchEvent(click);
-                },1)
-                setTimeout(()=>{
-                    if(!fullscreen_once){
-                        fullscreen_once = true;
+            if(fullscreen_status == false || fullscreen_cycle == true){
+                if(event.keyCode === (parseInt(BoomiTools.full_screen_shortcut) || 192)){
+    
+                    if(BoomiTools.full_screen_shortcut_alt && !event.altKey) return false;
+                    if(BoomiTools.full_screen_shortcut_ctrl && !event.ctrlKey) return false;
+                    if(BoomiTools.full_screen_shortcut_shift && !event.shiftKey) return false;
+    
+                    fullscreen_cycle = false;
+                    setTimeout(()=>{
                         button.dispatchEvent(click);
+                    },1)
+                    if(!fullscreen_once){
+                        setTimeout(()=>{
+                            fullscreen_once = true;
+                            button.dispatchEvent(click);
+                        },10)
                     }
-                },10)
+                }
             }
 
-            if(event.keyCode === 192 && event.altKey){
+            if(fullscreen_status == true && fullscreen_cycle == false){
                 [...document.querySelectorAll('.collapsible_dragger')].forEach((dragger,index) => {
                     setTimeout(()=>{
+                        fullscreen_cycle = true;
                         let rect = dragger.getBoundingClientRect();
                         var down = new MouseEvent('mousedown', {
                             "clientX":rect.left,
@@ -641,6 +684,8 @@ const add_fullscreen_listener = (button) => {
 
 const add_dialog_listener = (dialog) => {
 
+    if(!dialog.querySelector('.dialogTopCenterInner .Caption').innerText) return false;
+
     let rect = dialog.getBoundingClientRect();
     let children = [...dialog.getElementsByTagName('*')];
 
@@ -661,39 +706,39 @@ const add_dialog_listener = (dialog) => {
 
 }
 
+const get_XML_responses = (()=>{
+    let oldXHROpen = window.XMLHttpRequest.prototype.open;
+    window.XMLHttpRequest.prototype.open = function () {
+        this.addEventListener('load', function () {
+            if (this.responseText.includes('//OK[') && this.responseText.includes('xml')) {
+                try {
+                    let parsedRes = eval(`(${this.responseText.replace('//OK','')})`);
+                    if (!Array.isArray(parsedRes)) return false;
+                    parsedRes = parsedRes.flat();
+                    
+                    let parser = new DOMParser();
+                    parsedRes.forEach(element => {
+                        if (!element.toString().includes('xml')) return false;
+                        var dom = parser.parseFromString(`${element}`, 'text/xml');
 
+                        if (dom.getElementsByTagName('Folders').length) process_tree_update(dom)
+                        // else console.log(dom);
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            if(this.responseText.includes('#BoomiTools:')){
+                render_note_groups()
+            }
+        });
+
+        return oldXHROpen.apply(this, arguments);
+    }
+})()
+
+let bt_init = false;
 const BoomiTools_Init = () => {
-
-    const get_XML_responses = (()=>{
-        let oldXHROpen = window.XMLHttpRequest.prototype.open;
-        window.XMLHttpRequest.prototype.open = function () {
-            this.addEventListener('load', function () {
-                if (this.responseText.includes('//OK[') && this.responseText.includes('xml')) {
-                    try {
-                        let parsedRes = eval(`(${this.responseText.replace('//OK','')})`);
-                        if (!Array.isArray(parsedRes)) return false;
-                        parsedRes = parsedRes.flat();
-                        
-                        let parser = new DOMParser();
-                        parsedRes.forEach(element => {
-                            if (!element.toString().includes('xml')) return false;
-                            var dom = parser.parseFromString(`${element}`, 'text/xml');
-
-                            if (dom.getElementsByTagName('Folders').length) process_tree_update(dom)
-                            // else console.log(dom);
-                        });
-                    } catch (error) {
-                        console.log(error);
-                    }
-                }
-                if(this.responseText.includes('#BoomiTools:')){
-                    render_note_groups()
-                }
-            });
-
-            return oldXHROpen.apply(this, arguments);
-        }
-    })()
 
     const note_watcher = (()=>{
         document.addEventListener('DOMNodeInserted', function (e) {
@@ -716,248 +761,34 @@ const BoomiTools_Init = () => {
         }, false);
     })()
 
+    const global_listners = setInterval(()=>{
 
-    //WILL EVENTIALLY COMBINE ALL OF THESE LISTNERS INTO 1. FOR NOW ITS EASIER TO KEEP THEM AS IS SO I CAN DISABLE THEM
-
-
-    const process_flow_load = setInterval(()=>{
-
-        let process_panels = document.querySelectorAll('.gwt-ProcessPanel:not(.bt-load-done)');
-
-        if(process_panels.length){
-            [...process_panels].forEach(panel => {
-
-                panel.classList.add('bt-load-done')
-
-                quick_component_select(panel);
-
-            })
+        const listenerClass = (selector, callback) => {
+            let elements = document.querySelectorAll(`${selector}:not(.bt-load-done)`);
+            if(elements.length){
+                [...elements].forEach(el => {
+                    el.classList.add('bt-load-done'); callback(el);
+                })
+            }
         }
+
+        listenerClass('.gwt-ProcessPanel', quick_component_select);
+        listenerClass('.gwt-EndPoint', add_endpoint_listener);
+        listenerClass('.gwt-Shape', add_shape_listener);
+        listenerClass('.gwt-DialogBox', add_dialog_listener);
+        listenerClass('button.fullscreen_view_button', add_fullscreen_listener);
 
     },1000)
 
-    const endpoints_listener = setInterval(()=>{
-
-        let endpoints = document.querySelectorAll('.gwt-EndPoint:not(.bt-load-done)');
-
-        if(endpoints.length){
-            [...endpoints].forEach(endpoint => {
-
-                endpoint.classList.add('bt-load-done')
-
-                add_endpoint_listener(endpoint);
-
-            })
-        }
-
-    },1000)
-
-    const shape_listener = setInterval(()=>{
-
-        let shapes = document.querySelectorAll('.gwt-Shape:not(.bt-load-done)');
-
-        if(shapes.length){
-            [...shapes].forEach(shape => {
-                shape.classList.add('bt-load-done')
-
-                let rect = shape.getBoundingClientRect();
-                if(rect.width == 34 && rect.height == 34){
-                    add_shape_listener(shape);
-                }
-            })
-        }
-
-    },1000)
-
-    const fullscreen_listener = setInterval(()=>{
-
-        let buttons = document.querySelectorAll('button.fullscreen_view_button:not(.bt-load-done)');
-
-        if(buttons.length){
-            [...buttons].forEach(button => {
-                button.classList.add('bt-load-done')
-                add_fullscreen_listener(button);
-            })
-        }
-
-    },1000)
-
-    const dialog_listener = setInterval(()=>{
-
-        let dialogs = document.querySelectorAll('.gwt-DialogBox:not(.bt-load-done)');
-
-        if(dialogs.length){
-            [...dialogs].forEach(dialog => {
-                dialog.classList.add('bt-load-done');
-
-                if(dialog.querySelector('.dialogTopCenterInner .Caption').innerText){
-                    add_dialog_listener(dialog);
-                }
-            })
-        }
-
-    },1000)
-    
-    const insert_global_css = (()=>{
-
-        document.querySelector('body').insertAdjacentHTML('afterbegin', `
-        
-        <style>
-        
-            .greenGlow{
-                background: rgba(107, 193, 6, 0.65) !important;
-                border-radius: 50%;
-                padding: 1px;
-                box-shadow: 0 0 0 2px rgba(107, 193, 6, 1);
-            }
-
-            .redGlow{
-                background: rgba(255, 66, 34, 0.65) !important;
-                border-radius: 50%;
-                padding: 1px;
-                box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);
-                animation: redPulse 1s linear infinite;
-            }
-
-            @keyframes redPulse {
-                from {box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);}
-                to {box-shadow: 0 0 0 10px rgba(255, 66, 34, 0.0);}
-            }
-
-            .yellowGlow{
-                background: rgba(255, 235, 59, 0.65) !important;
-                border-radius: 50%;
-                padding: 1px;
-                box-shadow: 0 0 0 0 rgba(255, 235, 59, 1);
-                animation: yellowPulse 1s linear infinite;
-            }
-
-            @keyframes yellowPulse {
-                from {box-shadow: 0 0 0 0 rgba(255, 235, 59, 1);}
-                to {box-shadow: 0 0 0 10px rgba(255, 235, 59, 0.0);}
-            }
-
-            .yellowGlow img:not([title]){
-                display:none;
-            }
-
-            .gwt-TestFocused{
-                border:none;
-            }
-
-            .gwt-TestFocused::after{
-                content:'';
-                position:absolute;
-                width:100%;
-                height:100%;
-                top:-2px;left:-2px;
-                display:block;
-                border-radius: 50%;
-                transform: scale(1.2);
-                border: 2px dotted black;
-                animation: selectionrotate 1s steps(10, end) infinite reverse;
-            }
-
-            @keyframes selectionrotate {
-                from {transform: scale(1.2) rotate(0deg);}
-                to {transform: scale(1.2) rotate(360deg);}
-            }
-
-            .disconnected::after{
-                content:'';
-                position:absolute;
-                top: -20%;
-                left: -20%;
-                width: 130%;
-                height: 130%;
-                border-radius: 50%;
-                box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);
-                animation: redPulse 1s linear infinite;
-            }
-
-            .hover-menu-hidden-hotspot.left-arrow::after{
-                transform: rotate(90deg);
-                top: 50%;
-                left: 0;
-                margin-top: -10px;
-                margin-left: -5px;
-                z-index: -1;
-            }
-
-            .gwt-EndPoint .BoomiToolsEndpointMenu{
-                display:none;
-            }
-
-            .gwt-EndPoint.disconnected:hover .BoomiToolsEndpointMenu{
-                display:block;
-            }
-
-            .BoomiToolsEndpointMenu .gwt-ClickableLabel{
-                background: #007db8;
-            }
-
-            .BoomiToolsEndpointMenu .gwt-ClickableLabel:hover{
-                background: #007db8 url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAASCAYAAACaV7S8AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC5JREFUeNpi0rDP/8/EAAS4iC8g4gOIeAsiXoOIlyDiBYh4Dme9hMuC1X0ACDAA4fQNB2Q26qAAAAAASUVORK5CYII=') top left repeat-x !important;
-            }
-
-            .mastfoot .footer_msg{
-                float:left;
-            }
-
-            .boomitools_showconnections{
-                color:red;
-                font-weight:bold;
-            }
-
-            .connectionsspanlink{
-                color:red;
-                cursor:pointer
-            }
-
-            .connectionsspanlink:hover{
-                text-decoration:underline;
-            }
-
-            .gwt-connectors-line{
-                transition:background 200ms ease;
-            }
-
-            .boomitools-lineparent{
-                z-index:1;
-            }
-
-            .boomitools-linetrace{
-                background:#dddddd;
-            }
-
-            .boomitools-linetrace-active{
-                animation: tracepulse 0.3s ease infinite alternate;
-            }
-
-            @keyframes tracepulse {
-                from {
-                    background:#007db8;
-                }
-                to {
-                    background:#00adff;
-                }
-            }
-
-            span.ignoreBreaks {
-                white-space: pre-line;
-            }
-
-            .shape_palette_widget .gwt-Image{
-                width:32px !important;
-                height: 32px !important;
-            }
-        
-        </style>
-
-        `);
-
-    })()
+    dupeNamesCheck();
 
 }
 
-BoomiTools_Init()
+window.addEventListener('message', (e) => {
+    if(e.data.boomitoolsconfig){
+        window.BoomiTools = e.data;
+        if(!bt_init){
+            bt_init = true; BoomiTools_Init();
+        }
+    }
+}, false);

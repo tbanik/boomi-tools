@@ -1,0 +1,158 @@
+.greenGlow{
+    background: rgba(107, 193, 6, 0.65) !important;
+    border-radius: 50%;
+    padding: 1px;
+    box-shadow: 0 0 0 2px rgba(107, 193, 6, 1);
+}
+
+.redGlow{
+    background: rgba(255, 66, 34, 0.65) !important;
+    border-radius: 50%;
+    padding: 1px;
+    box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);
+    animation: redPulse 1s linear infinite;
+}
+
+@keyframes redPulse {
+    from {box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);}
+    to {box-shadow: 0 0 0 10px rgba(255, 66, 34, 0.0);}
+}
+
+.yellowGlow{
+    background: rgba(255, 235, 59, 0.65) !important;
+    border-radius: 50%;
+    padding: 1px;
+    box-shadow: 0 0 0 0 rgba(255, 235, 59, 1);
+    animation: yellowPulse 1s linear infinite;
+}
+
+@keyframes yellowPulse {
+    from {box-shadow: 0 0 0 0 rgba(255, 235, 59, 1);}
+    to {box-shadow: 0 0 0 10px rgba(255, 235, 59, 0.0);}
+}
+
+.yellowGlow img:not([title]){
+    display:none;
+}
+
+.gwt-TestFocused{
+    border:none;
+}
+
+.gwt-TestFocused::after{
+    content:'';
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:-2px;left:-2px;
+    display:block;
+    border-radius: 50%;
+    transform: scale(1.2);
+    border: 2px dotted black;
+    animation: selectionrotate 1s steps(10, end) infinite reverse;
+}
+
+@keyframes selectionrotate {
+    from {transform: scale(1.2) rotate(0deg);}
+    to {transform: scale(1.2) rotate(360deg);}
+}
+
+.disconnected::after{
+    content:'';
+    position:absolute;
+    top: -20%;
+    left: -20%;
+    width: 130%;
+    height: 130%;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(255, 66, 34, 1);
+}
+
+.bt-endpoint-flash.disconnected::after{
+    animation: redPulse 1s linear infinite;
+}
+
+.testModeBack .bt-endpoint-flash-testonly.disconnected::after{
+    animation: redPulse 1s linear infinite;
+}
+
+.hover-menu-hidden-hotspot.left-arrow::after{
+    transform: rotate(90deg);
+    top: 50%;
+    left: 0;
+    margin-top: -10px;
+    margin-left: -5px;
+    z-index: -1;
+}
+
+.gwt-EndPoint .BoomiToolsEndpointMenu{
+    display:none;
+}
+
+.gwt-EndPoint.disconnected:hover .BoomiToolsEndpointMenu{
+    display:block;
+}
+
+.BoomiToolsEndpointMenu .gwt-ClickableLabel{
+    background: #007db8;
+}
+
+.BoomiToolsEndpointMenu .gwt-ClickableLabel:hover{
+    background: #007db8 url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAASCAYAAACaV7S8AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC5JREFUeNpi0rDP/8/EAAS4iC8g4gOIeAsiXoOIlyDiBYh4Dme9hMuC1X0ACDAA4fQNB2Q26qAAAAAASUVORK5CYII=') top left repeat-x !important;
+}
+
+.mastfoot .footer_msg{
+    float:left;
+}
+
+.boomitools_showconnections{
+    color:red;
+    font-weight:bold;
+}
+
+.connectionsspanlink{
+    color:red;
+    cursor:pointer
+}
+
+.connectionsspanlink:hover{
+    text-decoration:underline;
+}
+
+.gwt-connectors-line{
+    transition:background 200ms ease;
+}
+
+.boomitools-lineparent{
+    z-index:1;
+}
+
+.boomitools-linetrace{
+    background:#dddddd !important;
+}
+
+.boomitools-linetrace-active-solid{
+    background:#007db8;
+}
+
+.boomitools-linetrace-active-pulse{
+    animation: tracepulse 0.3s ease infinite alternate;
+}
+
+@keyframes tracepulse {
+    from {
+        background:#007db8;
+    }
+    to {
+        background:#00adff;
+    }
+}
+
+span.ignoreBreaks {
+    white-space: pre-line;
+}
+
+.shape_palette_widget .gwt-Image{
+    width:32px !important;
+    height: 32px !important;
+}

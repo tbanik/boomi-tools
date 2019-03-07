@@ -1,14 +1,20 @@
 {
   "name": "Boomi Tools",
   "description": "A Simple Set of Tools to Improve Boomi",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
+  "options_ui": {
+    "page": "bt_options.html",
+    "open_in_tab": false
+  },
   "content_scripts": [{
     "matches": ["https://platform.boomi.com/*"],
     "run_at": "document_end",
-    "js": ["bt_contentScript.js"]
+    "js": ["bt_contentScript.js"],
+    "css": ["bt_style.css"]
   }],
   "web_accessible_resources" : ["bt_inPage.js"],
   "browser_action": {
@@ -16,7 +22,8 @@
     "default_icon": {
       "19": "img/BoomiTools_19.png",
       "38": "img/BoomiTools_38.png"
-    }
+    },
+    "default_popup": "bt_options.html"
   },
   "icons": {
     "16": "img/BoomiTools_16.png",
