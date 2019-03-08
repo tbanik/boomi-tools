@@ -454,8 +454,6 @@ const quick_component_select = (panel) => {
         }
     });
 
-
-
 }
 
 const add_endpoint_listener = (endpoint) => {
@@ -467,9 +465,9 @@ const add_endpoint_listener = (endpoint) => {
     }
 
     let endpointmenu_html = `
-    <div class="BoomiToolsEndpointMenu" tabindex="0" style="z-index: 5;position: absolute;left: 18px;top: -7px; width: max-content;" aria-hidden="true">
+    <div class="BoomiToolsEndpointMenu" tabindex="0" style="z-index: 5;position: absolute;left: -130%;top: -230%; width: max-content;" aria-hidden="true">
         <div>
-            <div class="hover-menu-hidden-hotspot left-arrow">
+            <div class="hover-menu-hidden-hotspot">
                 <div class="hover-menu">
                     <ul class="menu-options">
                         <li><div class="gwt-Label gwt-ClickableLabel bt-stop">Stop</div></li>
@@ -795,6 +793,41 @@ const process_to_image = (process) => {
 
 }
 
+const add_table_listener = (table) => {
+    let head = table.querySelector('thead');
+    if(!head) return false;
+    let over = false;
+    head.addEventListener('mouseover', event => {
+        over = true;
+        if(!head.querySelector('.bt-thead-menu')){
+            let menuHTML = `<div class="bt-thead-menu">
+
+                <a class='toggle_word_wrap'>Toggle Line Wrap</a>
+
+            </div>`;
+            head.insertAdjacentHTML('beforeend', menuHTML);
+            head.querySelector('.bt-thead-menu').style.display = 'block';
+
+            head.querySelector('.bt-thead-menu .toggle_word_wrap').addEventListener('click', event => {
+                table.classList.toggle('bt-no-wrap');
+            });
+
+        }else{
+            head.querySelector('.bt-thead-menu').style.display = 'block'
+        }
+    });
+
+    head.addEventListener('mouseout', event => {
+        over = false;
+        setTimeout(()=>{
+            if(head.querySelector('.bt-thead-menu') && !over){
+                head.querySelector('.bt-thead-menu').style.display = 'none';
+            }
+        },100)
+    });
+
+}
+
 const get_XML_responses = (()=>{
     let oldXHROpen = window.XMLHttpRequest.prototype.open;
     window.XMLHttpRequest.prototype.open = function () {
@@ -872,6 +905,7 @@ const BoomiTools_Init = () => {
         listenerClass('.gwt-EndPoint', add_endpoint_listener);
         listenerClass('.gwt-Shape', add_shape_listener);
         listenerClass('.gwt-DialogBox', add_dialog_listener);
+        listenerClass('.boomi_standard_table', add_table_listener);
         listenerClass('button.fullscreen_view_button', add_fullscreen_listener);
 
     },1000)

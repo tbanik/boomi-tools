@@ -152,7 +152,23 @@ span.ignoreBreaks {
     white-space: pre-line;
 }
 
+.bt-no-wrap span.ignoreBreaks{
+    white-space: unset !important;
+}
+
 .shape_palette_widget .gwt-Image{
     width:32px !important;
     height: 32px !important;
+}
+
+.bt-thead-menu{
+    display: none;
+    width:100vw;
+    background:#f6f6f6;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-bottom:solid 1px #dadada;
+    user-select: none;
 }
