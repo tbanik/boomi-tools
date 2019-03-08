@@ -795,7 +795,16 @@ const process_to_image = (process) => {
 
 const add_table_listener = (table) => {
     let head = table.querySelector('thead');
+    let wrapped = false;
+    let wrapper = null;
     if(!head) return false;
+
+    if(table.closest('.wrapped_text_column_style')){
+        wrapped = true;
+        wrapper = table.closest('.wrapped_text_column_style');
+        wrapper.classList.add('bt-table-wrapped');
+    }
+
     let over = false;
     head.addEventListener('mouseover', event => {
         over = true;
@@ -809,6 +818,8 @@ const add_table_listener = (table) => {
             head.querySelector('.bt-thead-menu').style.display = 'block';
 
             head.querySelector('.bt-thead-menu .toggle_word_wrap').addEventListener('click', event => {
+
+                if(wrapper) wrapper.classList.toggle('wrapped_text_column_style');
                 table.classList.toggle('bt-no-wrap');
             });
 
