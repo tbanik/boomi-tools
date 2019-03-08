@@ -13,6 +13,7 @@ const restore_options = () => {
     const options = Object.assign({},...[...document.querySelectorAll('.option')].map(option => ({[option.name]:null})));
 
     chrome.storage.sync.get(options, (items) => Object.entries(items).forEach(([key,value]) => {
+        if(!value) return false;
         let elements = [...document.getElementsByName(key)];
         if(elements.length == 1){
             if(value === true || value === false) elements[0].checked = value === true;
