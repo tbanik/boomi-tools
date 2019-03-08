@@ -460,10 +460,10 @@ const quick_component_select = (panel) => {
 
 const add_endpoint_listener = (endpoint) => {
 
-    if(BoomiTools.endpoint_flash == 'on'){
-        endpoint.classList.add('bt-endpoint-flash');
-    }else if(BoomiTools.endpoint_flash == 'testing'){
+    if(BoomiTools.endpoint_flash == 'testing'){
         endpoint.classList.add('bt-endpoint-flash-testonly');
+    }else if(BoomiTools.endpoint_flash != 'off'){
+        endpoint.classList.add('bt-endpoint-flash');
     }
 
     let endpointmenu_html = `
