@@ -1,10 +1,13 @@
-const loadScript = (() => {
+const loadScript = (url) => {
     let body = document.getElementsByTagName('body')[0];
     let script = document.createElement('script');
     script.setAttribute('type', 'text/javascript');
-    script.setAttribute('src', chrome.extension.getURL('bt_inPage.js'));
+    script.setAttribute('src', chrome.extension.getURL(url));
     body.appendChild(script);
-})()
+}
+
+loadScript('bt_inPage.js');
+loadScript('libs/rasterizeHTML.min.js');
 
 const updateBoomiToolsConfig = () => {
     chrome.storage.sync.get(null, (config) => {
