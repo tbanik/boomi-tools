@@ -724,8 +724,12 @@ const process_to_image = (process) => {
                 <div class="alert_text">
                     <b>BoomiTools:</b> Capture Process
                     <p>This tool will quickly take over your browser window while capturing the Process Canvas. It will return to normal after the canvas is rasterized.</p>
+                    
                     <br>
                     <button type="button" class="gwt-Button action_button" title="Run Capture Process">Run Capture Process</button>
+                    <label>
+                        <input type="checkbox" class="transparent" style="vertical-align: middle;" /> Transparent Background
+                    </label>
                 </div>
                 <span class="alert_dismiss">
                     <a class="gwt-Anchor" data-locator="link-cancel" href="javascript:document.querySelector('.BoomiToolsOverlay').remove();">
@@ -742,17 +746,25 @@ const process_to_image = (process) => {
 
         document.querySelector('.BoomiToolsOverlay button.action_button').addEventListener('click', event => {
 
+            let transparency = document.querySelector('.BoomiToolsOverlay .transparent').checked;
+
             document.querySelector('.BoomiToolsOverlay').remove();
     
             let process_org = Object.assign({},process.style);
             let title = process.closest('.gwt-TabLayoutPanelContentContainer').querySelector('.component_header .name_label').title;
             
+            document.getElementsByTagName('body')[0].style.marginTop = '99999px';
             process.style.position = "fixed";
             process.style.overflow = "auto";
             process.style.zIndex = "99999";
             process.style.top = "0";
             process.style.left = "0";
-            process.style.backgroundColor = "white";
+            if(transparency){
+                process.style.backgroundColor = "";
+                process.style.backgroundImage = "none";
+            }else{
+                process.style.backgroundColor = "white";
+            }
     
             [...document.querySelectorAll('.BoomiToolsEndpointMenu')].forEach(stopper => {
                 stopper.style.visibility = 'hidden';
@@ -768,18 +780,20 @@ const process_to_image = (process) => {
                 body.appendChild(canvas);
     
                 rasterizeHTML.drawDocument(document, canvas).then(() => {
-                    let output_html = `<a href="${canvas.toDataURL()}" download="${title}" id="output-process-image" target="_blank"></a>`;
+
+                    let output_html = `<a href="${canvas.toDataURL()}" download="${title}.png" id="output-process-image" target="_blank"></a>`;
     
                     body.insertAdjacentHTML('beforeend', output_html);
-    
                     
                     setTimeout(()=>{
+                        document.getElementsByTagName('body')[0].style.marginTop = '';
                         process.style.position = process_org.position;
                         process.style.overflow = process_org.overflow;
                         process.style.zIndex = process_org.zIndex;
                         process.style.top = process_org.top;
                         process.style.left = process_org.left;
                         process.style.backgroundColor = process_org.backgroundColor;
+                        process.style.backgroundImage = process_org.backgroundImage;
     
                         [...document.querySelectorAll('.BoomiToolsEndpointMenu')].forEach(stopper => {
                             stopper.style.visibility = 'visible';
