@@ -839,6 +839,136 @@ const add_table_listener = (table) => {
 
 }
 
+const add_description_listener = (description) => {
+
+    if(BoomiTools.description_markdown == 'off') return false;
+
+    const converter = new showdown.Converter(),
+    renderMD = () => {
+        const text_value = description.querySelector('textarea').value;
+        var html = null;
+        if(description.classList.contains('render-markdown')) html = converter.makeHtml(text_value);
+        else html = text_value;
+        description.querySelector('p').innerHTML = html;
+    }
+
+    let observer = new MutationObserver(event => {
+        if(!description.querySelector('p').classList.contains('no_display') && !description.classList.contains('no_display')){
+            renderMD();
+            description.closest('.component_header').querySelector('.links .bt-markdown-toggle').classList.remove('no_display')
+        }else{
+            description.closest('.component_header').querySelector('.links .bt-markdown-toggle').classList.add('no_display')
+        }
+    })
+      
+    let observer_config = {
+        attributes: true, 
+        attributeFilter: ['class'],
+        childList: false, 
+        characterData: false
+    }
+
+    observer.observe(description.querySelector('p'), observer_config);
+    observer.observe(description, observer_config);
+
+    if(BoomiTools.description_markdown == 'on' || !BoomiTools.description_markdown){
+        description.classList.add('render-markdown');
+    }
+    renderMD();
+
+    let toggle_html = `
+    <a class="fonticon_anchor icon-eye bt-markdown-toggle" onclick="toggleMarkdown(this)">Toggle Markdown</a>
+    `;
+    description.closest('.component_header').querySelector('.links').insertAdjacentHTML('beforeend', toggle_html);
+
+}
+
+const toggleMarkdown = (target) => {
+    target.closest('.component_header').querySelector('.description_panel').classList.toggle('render-markdown');
+    target.closest('.component_header').querySelector('.description_panel > p').classList.toggle('render-markdown');
+}
+
+const tab_indexes = (process) => {
+
+    //Future feature to navigate through shapes process? using arrow keys?
+
+    /* let process_shapes = [...process.querySelectorAll('.gwt-Shape')];
+
+    const shapes_handler = () => {
+        if(!process_shapes.length) return false;
+
+        process_shapes.forEach(shape => {
+            shape.classList.add('bt-shape-handler')
+        })
+    }
+
+    shapes_handler()
+
+    process.addEventListener('DOMNodeInserted', function (e) {
+        try {
+            let shape = e.target.querySelector('.gwt-Shape');
+            if(shape) {
+                process_shapes.push(shape);
+                shapes_handler()
+            }
+        } catch (error) {}
+    }, false); */
+
+}
+
+const add_sidepanel_listener = (sidepanel) => {
+
+    let textRow = [...sidepanel.querySelectorAll('.form_row.text_area_row')].find(el => el.querySelector('.form_label').innerText == 'Message');
+    if(textRow){
+        let textArea = textRow.querySelector('.gwt-TextArea');
+        let container = textArea.parentNode;
+        
+        let toggle_editor = `
+        <label style="display:block;">
+            <input type="checkbox" onchange="toggleEditor(this)">
+            Toggle JSON Editor (auto escape curly bracket notation)
+        </label>
+        `;
+        container.insertAdjacentHTML('beforeend', toggle_editor);
+    }
+}
+
+const renderEditor = (target) => {
+    let container = target.parentNode.parentNode;
+    let textArea = container.querySelector('.gwt-TextArea');
+    
+    let editor_html = `
+    <div class="bt-json-editor" style="height:${textArea.offsetHeight}px;width:${textArea.offsetWidth}px;border: 1px solid #999;border-radius: 2px;position:relative;box-sizing: border-box;margin-bottom:4px;"></div>
+    `;
+    container.insertAdjacentHTML('afterbegin', editor_html);
+    
+    textArea.classList.add('no_display');
+    setTimeout(()=>{
+        let editor = container.querySelector('.bt-json-editor');
+        
+        let codeArea = new CodeFlask(editor, {
+            language: 'js',
+            lineNumbers: false
+        })
+        
+        let code = String.raw `${textArea.value.trim().replace(/^\'/,'').replace(/\'$/,'').replace(/\'(\{\d+\})\'/g,"$1")}`
+        codeArea.updateCode(code)
+        
+        codeArea.onUpdate( e =>{
+            textArea.value = "'"+e.replace(/(\{\d+\})/g,"'$1'")+"'";
+        })
+    },100)
+}
+
+const toggleEditor = (target) => {
+    if(target.checked) renderEditor(target);
+    else {
+        target.parentNode.parentNode.querySelector('.bt-json-editor').remove();
+        target.parentNode.parentNode.querySelector('.gwt-TextArea').classList.remove('no_display');
+    }
+}
+
+
 const get_XML_responses = (()=>{
     let oldXHROpen = window.XMLHttpRequest.prototype.open;
     window.XMLHttpRequest.prototype.open = function () {
@@ -873,7 +1003,7 @@ const get_XML_responses = (()=>{
 let bt_init = false;
 const BoomiTools_Init = () => {
 
-    const note_watcher = (()=>{
+    const dom_watcher = (()=>{
         document.addEventListener('DOMNodeInserted', function (e) {
             try {
                 let noteForm = e.target.querySelector('.note-form');
@@ -912,12 +1042,14 @@ const BoomiTools_Init = () => {
             }
         }
 
-        listenerClass('.gwt-ProcessPanel', [quick_component_select, process_to_image]);
+        listenerClass('.gwt-ProcessPanel', [quick_component_select, process_to_image, tab_indexes]);
         listenerClass('.gwt-EndPoint', add_endpoint_listener);
         listenerClass('.gwt-Shape', add_shape_listener);
         listenerClass('.gwt-DialogBox', add_dialog_listener);
         listenerClass('.boomi_standard_table', add_table_listener);
         listenerClass('button.fullscreen_view_button', add_fullscreen_listener);
+        listenerClass('.description_panel', add_description_listener);
+        listenerClass('.shape_side_panel', add_sidepanel_listener);
 
     },1000)
 

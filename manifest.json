@@ -1,7 +1,7 @@
 {
   "name": "Boomi Tools",
   "description": "A Simple Set of Tools to Improve Boomi",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "permissions": [
     "activeTab",
     "storage"
@@ -16,7 +16,7 @@
     "js": ["bt_contentScript.js"],
     "css": ["bt_style.css"]
   }],
-  "web_accessible_resources" : ["bt_inPage.js", "libs/rasterizeHTML.min.js"],
+  "web_accessible_resources" : ["bt_inPage.js", "libs/rasterizeHTML.min.js", "libs/showdown.min.js", "libs/codeflask.min.js"],
   "browser_action": {
     "default_title": "Boomi Tools",
     "default_icon": {

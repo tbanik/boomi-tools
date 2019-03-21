@@ -8,6 +8,8 @@ const loadScript = (url) => {
 
 loadScript('bt_inPage.js');
 loadScript('libs/rasterizeHTML.min.js');
+loadScript('libs/showdown.min.js');
+loadScript('libs/codeflask.min.js');
 
 const updateBoomiToolsConfig = () => {
     chrome.storage.sync.get(null, (config) => {
