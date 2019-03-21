@@ -851,7 +851,7 @@ const add_description_listener = (description) => {
     renderMD = () => {
         const text_value = description.querySelector('textarea').value;
         var html = null;
-        if(description.classList.contains('render-markdown')) html = converter.makeHtml(text_value);
+        if(!description.querySelector('.bt-md')) html = `<p class="bt-md">${converter.makeHtml(text_value)}</p>`;
         else html = text_value;
         description.querySelector('p').innerHTML = html;
     }
@@ -878,7 +878,6 @@ const add_description_listener = (description) => {
     if(BoomiTools.description_markdown == 'on' || !BoomiTools.description_markdown){
         description.classList.add('render-markdown');
     }
-    renderMD();
 
     let toggle_html = `
     <a class="fonticon_anchor icon-eye bt-markdown-toggle" onclick="toggleMarkdown(this)">Toggle Markdown</a>
