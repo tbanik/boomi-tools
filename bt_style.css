@@ -156,7 +156,7 @@ span.ignoreBreaks {
     white-space: unset !important;
 }
 
-.shape_palette_widget .gwt-Image[title]{
+.shape_palette_widget .gwt-Image[title]:not([title="Note"]){
     width:32px !important;
     height: 32px !important;
 }

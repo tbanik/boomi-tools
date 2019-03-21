@@ -530,6 +530,10 @@ const add_shape_listener = (shape) => {
     let rect = shape.getBoundingClientRect();
     if(rect.width != 34 && rect.height != 34) return false;
 
+    let iconTitle = shape.querySelector('.gwt-Image:not([title])');
+    let iconTitle2 = shape.querySelector('.gwt-Image[title="Note"]');
+    if(iconTitle || iconTitle2) return false;
+
     let timer = null;
 
     setTimeout(()=>{
@@ -888,6 +892,30 @@ const toggleMarkdown = (target) => {
     target.closest('.component_header').querySelector('.description_panel > p').classList.toggle('render-markdown');
 }
 
+const add_notecontent_listener = (element) => {
+    const converter = new showdown.Converter(),
+    renderMD = () => {
+        const text_value = element.innerText.replace(/\n{0,2}---\n\#BoomiTools: \[\"(\d*px)\"\,\"(\d*px)\"\,\"([a-z]*)\"\]/g,'\n\n*BoomiTools: ["$1","$2","$3"]*');
+        element.innerHTML = `<p class="bt-md">${converter.makeHtml(text_value)}</p>`;
+
+        let BTdef = [...element.querySelectorAll('em')].find(el => el.innerText.includes('BoomiTools:'));
+        if(BTdef) BTdef.style.opacity = '0.5';
+    }
+
+    let observer = new MutationObserver(event => {
+        if(!element.querySelector('.bt-md')) renderMD();
+    })
+      
+    let observer_config = {
+        childList: true, 
+        attributes: false,
+        characterData: false
+    }
+
+    observer.observe(element, observer_config);
+    renderMD();
+}
+
 const tab_indexes = (process) => {
 
     //Future feature to navigate through shapes process? using arrow keys?
@@ -1050,6 +1078,7 @@ const BoomiTools_Init = () => {
         listenerClass('button.fullscreen_view_button', add_fullscreen_listener);
         listenerClass('.description_panel', add_description_listener);
         listenerClass('.shape_side_panel', add_sidepanel_listener);
+        listenerClass('.note-content', add_notecontent_listener);
 
     },1000)
 
