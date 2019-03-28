@@ -730,6 +730,11 @@ const process_to_image = (process) => {
                     <label>
                         <input type="checkbox" class="transparent" style="vertical-align: middle;" /> Transparent Background
                     </label>
+                    <select class="uiscale">
+                        <option value="1.0" selected>1x (normal size)</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2.0">2x</option>
+                    </select>
                 </div>
                 <span class="alert_dismiss">
                     <a class="gwt-Anchor" data-locator="link-cancel" href="javascript:document.querySelector('.BoomiToolsOverlay').remove();">
@@ -747,11 +752,12 @@ const process_to_image = (process) => {
         document.querySelector('.BoomiToolsOverlay button.action_button').addEventListener('click', event => {
 
             let transparency = document.querySelector('.BoomiToolsOverlay .transparent').checked;
+            let uiscale = document.querySelector('.BoomiToolsOverlay .uiscale').value || '1.0';
 
             document.querySelector('.BoomiToolsOverlay').remove();
     
             let process_org = Object.assign({},process.style);
-            let title = process.closest('.gwt-TabLayoutPanelContentContainer').querySelector('.component_header .name_label').title;
+            let title = process.closest('.gwt-TabLayoutPanelContent').querySelector('.component_header .name_label').title;
             
             document.getElementsByTagName('body')[0].style.marginTop = '99999px';
             process.style.position = "fixed";
@@ -759,6 +765,8 @@ const process_to_image = (process) => {
             process.style.zIndex = "99999";
             process.style.top = "0";
             process.style.left = "0";
+            process.style.transformOrigin = "0 0";
+            process.style.transform = `scale(${uiscale})`;
             if(transparency){
                 process.style.backgroundColor = "";
                 process.style.backgroundImage = "none";
@@ -768,7 +776,15 @@ const process_to_image = (process) => {
     
             [...document.querySelectorAll('.BoomiToolsEndpointMenu')].forEach(stopper => {
                 stopper.style.visibility = 'hidden';
-            })
+            });
+
+            [...process.querySelectorAll('.disconnected')].forEach(point => {
+                point.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiPjxkZWZzPjxwYXRoIGQ9Ik0xNSA4YTcuMDEgNy4wMSAwIDAgMS03IDcgNy4wMSA3LjAxIDAgMCAxLTctNyA3LjAxIDcuMDEgMCAwIDEgNy03IDcuMDEgNy4wMSAwIDAgMSA3IDd6IiBpZD0iQSIvPjxwYXRoIGQ9Ik0xMS40MyA5Yy4zNy0uMzQuNTYtLjY4LjU3LTFzLS4xNy0uNjctLjUzLTFsLTIuMi0yLjNjLS4zNS0uMzUtLjktLjM1LTEuMjYgMC0uMzUuMzQtLjM1LjkgMCAxLjI2TDkuMDcgNy4xSDQuOWEuODkuODkgMCAxIDAgMCAxLjc4aDQuMThsLTEuMTUgMS4xNGMtLjM1LjM1LS4zNS45LS4wMSAxLjI2LjM1LjM1LjkyLjM1IDEuMjYuMDFMMTEuNDMgOXoiIGlkPSJCIi8+PC9kZWZzPjx1c2UgeGxpbms6aHJlZj0iI0EiIGZpbGw9IiNmZjQyMjIiLz48dXNlIHhsaW5rOmhyZWY9IiNCIiBmaWxsPSIjZmZmIi8+PC9zdmc+')";
+            });
+
+            [...process.querySelectorAll('.connected')].forEach(point => {
+                point.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiPjxkZWZzPjxwYXRoIGQ9Ik0xNSA4YTcuMDEgNy4wMSAwIDAgMS03IDcgNy4wMSA3LjAxIDAgMCAxLTctNyA3LjAxIDcuMDEgMCAwIDEgNy03IDcuMDEgNy4wMSAwIDAgMSA3IDd6IiBpZD0iQSIvPjxwYXRoIGQ9Ik0xMS40MyA5Yy4zNy0uMzQuNTYtLjY4LjU3LTFzLS4xNy0uNjctLjUzLTFsLTIuMi0yLjNjLS4zNS0uMzUtLjktLjM1LTEuMjYgMC0uMzUuMzQtLjM1LjkgMCAxLjI2TDkuMDcgNy4xSDQuOWEuODkuODkgMCAxIDAgMCAxLjc4aDQuMThsLTEuMTUgMS4xNGMtLjM1LjM1LS4zNS45LS4wMSAxLjI2LjM1LjM1LjkyLjM1IDEuMjYuMDFMMTEuNDMgOXoiIGlkPSJCIi8+PC9kZWZzPjx1c2UgeGxpbms6aHJlZj0iI0EiIGZpbGw9IiM2YmMxMDYiLz48dXNlIHhsaW5rOmhyZWY9IiNCIiBmaWxsPSIjZmZmIi8+PC9zdmc+')";
+            });
     
             setTimeout(()=>{
                 let rect = process.getBoundingClientRect();
@@ -792,6 +808,8 @@ const process_to_image = (process) => {
                         process.style.zIndex = process_org.zIndex;
                         process.style.top = process_org.top;
                         process.style.left = process_org.left;
+                        process.style.transformOrigin = process_org.transformOrigin;
+                        process.style.transform = process_org.transform;
                         process.style.backgroundColor = process_org.backgroundColor;
                         process.style.backgroundImage = process_org.backgroundImage;
     
